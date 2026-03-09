@@ -13,18 +13,19 @@
         @Steps {
             @Step {
                 Define a hello envelope and a canonical payload that includes device identity, advertisement, protocol version, supported features, and signing metadata.
-                @Code(name: "Hello Envelope and Canonical Payload", file: LayerASignedHandshakeAboveLoom-HelloEnvelope.swift)
+                @Code(name: "SignedHello.swift", file: LayerASignedHandshakeAboveLoom-HelloEnvelope.swift)
                 Keeping the canonical payload explicit makes the signature surface stable and reviewable.
             }
 
             @Step {
                 Sign the canonical payload with the current Loom identity before sending the hello over the session.
-                @Code(name: "Create a Signed Hello", file: LayerASignedHandshakeAboveLoom-MakeSignedHello.swift)
+                @Code(name: "SignedHello.swift", file: LayerASignedHandshakeAboveLoom-MakeSignedHello.swift)
                 The sender should sign bytes both sides can reproduce deterministically, not an ad hoc encoding that is easy to change by accident.
             }
 
             @Step {
                 Include a timestamp and nonce in the signed payload so the receiver can reject stale or replayed messages later.
+                @Code(name: "SignedHello.swift", file: LayerASignedHandshakeAboveLoom-MakeSignedHello.swift)
             }
         }
     }
@@ -37,16 +38,18 @@
         @Steps {
             @Step {
                 Add a `LoomReplayProtector` to the runtime that validates incoming hellos.
+                @Code(name: "SignedHello.swift", file: LayerASignedHandshakeAboveLoom-ValidateHello.swift)
             }
 
             @Step {
                 Rebuild the canonical payload, verify the key identifier, verify the signature, and then validate the replay window.
-                @Code(name: "Validate the Incoming Hello", file: LayerASignedHandshakeAboveLoom-ValidateHello.swift)
+                @Code(name: "SignedHello.swift", file: LayerASignedHandshakeAboveLoom-ValidateHello.swift)
                 MirageKit follows the same order conceptually: authenticate the hello first, then move on to protocol policy and trust.
             }
 
             @Step {
                 Keep rejection reasons precise so the host or client can distinguish between invalid key identity, invalid signature, protocol mismatch, missing features, and replay rejection.
+                @Code(name: "SignedHello.swift", file: LayerASignedHandshakeAboveLoom-ValidateHello.swift)
             }
         }
     }
@@ -59,16 +62,18 @@
         @Steps {
             @Step {
                 Build a `LoomPeerIdentity` only after the hello has been authenticated and then pass that identity into your trust provider.
-                @Code(name: "Evaluate Trust from a Verified Hello", file: LayerASignedHandshakeAboveLoom-EvaluateTrust.swift)
+                @Code(name: "SignedHello.swift", file: LayerASignedHandshakeAboveLoom-EvaluateTrust.swift)
                 Trust policy should never be asked to reason about a hello that has not already passed signature and replay checks.
             }
 
             @Step {
                 Keep protocol negotiation separate from trust evaluation so version and capability mismatches fail before approval policy enters the picture.
+                @Code(name: "SignedHello.swift", file: LayerASignedHandshakeAboveLoom-EvaluateTrust.swift)
             }
 
             @Step {
                 Carry discovery expectations into the handshake by comparing the verified identity with anything the advertisement promised, such as an expected `identityKeyID`.
+                @Code(name: "SignedHello.swift", file: LayerASignedHandshakeAboveLoom-EvaluateTrust.swift)
             }
         }
     }

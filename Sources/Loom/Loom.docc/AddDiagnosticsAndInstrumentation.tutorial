@@ -13,18 +13,19 @@
         @Steps {
             @Step {
                 Create sink types for diagnostics and instrumentation that can receive events asynchronously.
-                @Code(name: "Diagnostics and Step Sinks", file: AddDiagnosticsAndInstrumentation-Sinks.swift)
+                @Code(name: "MyRuntimeObservability.swift", file: AddDiagnosticsAndInstrumentation-Sinks.swift)
                 Keep the sink implementation simple at first; the important part is that your runtime has a place to send structured events.
             }
 
             @Step {
                 Register the sinks during service startup and retain the returned tokens if you plan to remove them later.
-                @Code(name: "Register and Remove Sink Tokens", file: AddDiagnosticsAndInstrumentation-RegisterSinks.swift)
+                @Code(name: "MyRuntimeObservability.swift", file: AddDiagnosticsAndInstrumentation-RegisterSinks.swift)
                 Treat these registrations as part of runtime startup rather than as ad hoc debug helpers.
             }
 
             @Step {
                 Use product-owned `LoomLogCategory` values when Loom's built-in categories are not specific enough for your runtime.
+                @Code(name: "MyRuntimeObservability.swift", file: AddDiagnosticsAndInstrumentation-RegisterSinks.swift)
             }
         }
     }
@@ -37,17 +38,18 @@
         @Steps {
             @Step {
                 Register a context provider from the service that owns the connection state.
-                @Code(name: "Register a Context Provider", file: AddDiagnosticsAndInstrumentation-ContextProvider.swift)
+                @Code(name: "MyRuntimeObservability.swift", file: AddDiagnosticsAndInstrumentation-ContextProvider.swift)
                 Good context keys are small, stable, and cheap to compute, such as connection state, active peer count, transport mode, or whether approval is pending.
             }
 
             @Step {
                 Keep context free of large payloads and privacy-sensitive data so snapshots are safe to inspect and export.
+                @Code(name: "MyRuntimeObservability.swift", file: AddDiagnosticsAndInstrumentation-ContextProvider.swift)
             }
 
             @Step {
                 Snapshot context when you need an aggregate runtime view.
-                @Code(name: "Snapshot Runtime Context", file: AddDiagnosticsAndInstrumentation-SnapshotContext.swift)
+                @Code(name: "MyRuntimeObservability.swift", file: AddDiagnosticsAndInstrumentation-SnapshotContext.swift)
                 This is useful for bug reports and app-owned support flows.
             }
         }
@@ -61,18 +63,19 @@
         @Steps {
             @Step {
                 Report structured errors through `LoomDiagnostics.report` or `LoomDiagnostics.run` so failures keep their metadata and can still be rethrown.
-                @Code(name: "Report Errors and Wrap Operations", file: AddDiagnosticsAndInstrumentation-ReportAndRun.swift)
+                @Code(name: "MyRuntimeObservability.swift", file: AddDiagnosticsAndInstrumentation-ReportAndRun.swift)
                 This preserves error domain and code without forcing every call site to build its own event objects.
             }
 
             @Step {
                 Emit app-owned `LoomStepEvent` values around state transitions that matter, such as discovery start, connection request, or handshake verification.
-                @Code(name: "Emit Step Events", file: AddDiagnosticsAndInstrumentation-StepEvents.swift)
+                @Code(name: "MyRuntimeObservability.swift", file: AddDiagnosticsAndInstrumentation-StepEvents.swift)
                 Keep the step names specific enough to reconstruct the lifecycle without flooding the sink with low-signal micro-events.
             }
 
             @Step {
                 Once the runtime emits useful observability data, lock it down with tests so future refactors cannot silently break your signal path.
+                @Code(name: "MyRuntimeObservability.swift", file: AddDiagnosticsAndInstrumentation-StepEvents.swift)
             }
         }
     }

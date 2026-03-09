@@ -16,8 +16,10 @@ final class MyClientService {
     private let discovery: LoomDiscovery
 
     private(set) var peers: [LoomPeer] = []
+    private(set) var selectedPeerID: UUID?
     private(set) var connectionState: ConnectionState = .disconnected
     private(set) var session: LoomSession?
+    private let reconnectDelay: Duration = .seconds(1)
 
     init() {
         let configuration = LoomNetworkConfiguration(

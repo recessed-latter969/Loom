@@ -13,16 +13,18 @@
         @Steps {
             @Step {
                 Create an app-owned host service that owns one node and the minimum state needed to advertise and accept sessions.
-                @Code(name: "MyHostService", file: BuildAHostServiceOnLoom-MyHostService.swift)
+                @Code(name: "MyHostService.swift", file: BuildAHostServiceOnLoom-MyHostService.swift)
                 This service boundary is the important part. It gives the host a place to keep transport state without pushing product behavior into Loom itself.
             }
 
             @Step {
                 Keep the service boundary explicit by letting it own the stable device ID, display name, service type, trust provider, and the code that maps accepted `LoomSession` values into your protocol.
+                @Code(name: "MyHostService.swift", file: BuildAHostServiceOnLoom-MyHostService.swift)
             }
 
             @Step {
                 Keep protocol negotiation, approval UI, connected-client bookkeeping, and any product-specific CloudKit lifecycle above Loom so the package remains reusable.
+                @Code(name: "MyHostService.swift", file: BuildAHostServiceOnLoom-MyHostService.swift)
             }
         }
     }
@@ -35,17 +37,18 @@
         @Steps {
             @Step {
                 Build the advertisement from a stable device ID and the current Loom identity key.
-                @Code(name: "Build the Advertisement", file: BuildAHostServiceOnLoom-BuildAdvertisement.swift)
+                @Code(name: "MyHostService.swift", file: BuildAHostServiceOnLoom-BuildAdvertisement.swift)
                 MirageKit follows this exact pattern: transport identity stays in the base advertisement, while app-specific capability hints live in namespaced metadata.
             }
 
             @Step {
                 Keep metadata namespaced, versioned, and intentionally small so discovery can answer compatibility questions without turning into your whole protocol.
+                @Code(name: "MyHostService.swift", file: BuildAHostServiceOnLoom-BuildAdvertisement.swift)
             }
 
             @Step {
                 Update the advertisement through the node when host capabilities change at runtime.
-                @Code(name: "Refresh the Advertisement", file: BuildAHostServiceOnLoom-RefreshAdvertisement.swift)
+                @Code(name: "MyHostService.swift", file: BuildAHostServiceOnLoom-RefreshAdvertisement.swift)
                 This keeps discovery aligned with the host's current identity and capability surface.
             }
         }
@@ -59,19 +62,19 @@
         @Steps {
             @Step {
                 Start advertising and hand each accepted session into your own host pipeline.
-                @Code(name: "Start the Host Runtime", file: BuildAHostServiceOnLoom-StartHost.swift)
+                @Code(name: "MyHostService.swift", file: BuildAHostServiceOnLoom-StartHost.swift)
                 The host service owns the lifecycle state and decides how startup failures should surface to the rest of the app.
             }
 
             @Step {
                 Start the `LoomSession` and immediately hand it to an app-owned handshake or framing layer rather than teaching Loom about your message protocol.
-                @Code(name: "Accept an Incoming Session", file: BuildAHostServiceOnLoom-AcceptSession.swift)
+                @Code(name: "MyHostService.swift", file: BuildAHostServiceOnLoom-AcceptSession.swift)
                 This is the same boundary MirageKit uses: Loom gets the connection open, then the product runtime takes over.
             }
 
             @Step {
                 Add an explicit stop path so the host can tear down cleanly and predictably.
-                @Code(name: "Stop the Host Runtime", file: BuildAHostServiceOnLoom-StopHost.swift)
+                @Code(name: "MyHostService.swift", file: BuildAHostServiceOnLoom-StopHost.swift)
                 Once this flow exists, the next problem is turning raw sessions into authenticated peers with a signed handshake.
             }
         }

@@ -21,3 +21,14 @@ actor StepRecorder: LoomInstrumentationSink {
         events.append(event)
     }
 }
+
+@MainActor
+final class MyClientServiceWithDiagnostics {
+    private var diagnosticsToken: LoomDiagnosticsSinkToken?
+    private var instrumentationToken: LoomInstrumentationSinkToken?
+    private var diagnosticsContextToken: LoomDiagnosticsContextProviderToken?
+
+    private(set) var availablePeerCount = 0
+    private(set) var isAwaitingApproval = false
+    private(set) var connectionState = "disconnected"
+}

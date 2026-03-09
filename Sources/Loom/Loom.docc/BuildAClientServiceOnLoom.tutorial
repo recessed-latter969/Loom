@@ -13,16 +13,18 @@
         @Steps {
             @Step {
                 Create a client service with one node, one discovery object, and explicit connection state.
-                @Code(name: "MyClientService", file: BuildAClientServiceOnLoom-MyClientService.swift)
+                @Code(name: "MyClientService.swift", file: BuildAClientServiceOnLoom-MyClientService.swift)
                 Keeping browsing and connection state in one place makes the runtime easier to reason about and far easier to instrument.
             }
 
             @Step {
                 Let the client service own the peer list, the selected peer, and any reconnect policy so those decisions do not get buried inside view code.
+                @Code(name: "MyClientService.swift", file: BuildAClientServiceOnLoom-MyClientService.swift)
             }
 
             @Step {
                 Decide how the client will filter peers before connect so incompatible advertisements never enter the handshake path in the first place.
+                @Code(name: "MyClientService.swift", file: BuildAClientServiceOnLoom-MyClientService.swift)
             }
         }
     }
@@ -35,18 +37,19 @@
         @Steps {
             @Step {
                 Start discovery and capture peer updates into the client service.
-                @Code(name: "Browse for Peers", file: BuildAClientServiceOnLoom-BrowsePeers.swift)
+                @Code(name: "MyClientService.swift", file: BuildAClientServiceOnLoom-BrowsePeers.swift)
                 The service should treat discovery as input and decide how those peers become visible to the rest of the app.
             }
 
             @Step {
                 Centralize peer filtering so protocol-version and role checks stay testable and do not spread across the UI.
-                @Code(name: "Filter Compatible Peers", file: BuildAClientServiceOnLoom-FilterPeers.swift)
+                @Code(name: "MyClientService.swift", file: BuildAClientServiceOnLoom-FilterPeers.swift)
                 MirageKit follows the same approach conceptually: discovery finds peers, but product-owned compatibility rules decide which peers are worth attempting.
             }
 
             @Step {
                 Make peer selection an explicit decision point so the runtime can support UI-driven selection, remembered peers, policy filtering, and retry on a different peer after failure.
+                @Code(name: "MyClientService.swift", file: BuildAClientServiceOnLoom-FilterPeers.swift)
             }
         }
     }
@@ -59,18 +62,19 @@
         @Steps {
             @Step {
                 Connect using the discovered endpoint, wrap the `NWConnection` in a `LoomSession`, and hand the session to your client handshake.
-                @Code(name: "Connect to a Peer", file: BuildAClientServiceOnLoom-Connect.swift)
+                @Code(name: "MyClientService.swift", file: BuildAClientServiceOnLoom-Connect.swift)
                 Preserve anything discovery told you about the selected peer, such as the expected `identityKeyID`, so the handshake can verify that expectation.
             }
 
             @Step {
                 Keep disconnect and reconnect policy explicit rather than hiding it inside state callbacks.
-                @Code(name: "Disconnect Cleanly", file: BuildAClientServiceOnLoom-Disconnect.swift)
+                @Code(name: "MyClientService.swift", file: BuildAClientServiceOnLoom-Disconnect.swift)
                 Reconnect logic becomes much easier to reason about when the client service owns it directly.
             }
 
             @Step {
                 Once the client can browse and connect, the next layer is a signed handshake that turns a raw session into an authenticated peer relationship.
+                @Code(name: "MyClientService.swift", file: BuildAClientServiceOnLoom-Disconnect.swift)
             }
         }
     }

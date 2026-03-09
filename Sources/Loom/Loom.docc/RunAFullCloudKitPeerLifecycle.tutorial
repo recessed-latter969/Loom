@@ -13,18 +13,19 @@
         @Steps {
             @Step {
                 Create a CloudKit runtime with app-owned naming for the container, record types, share title, and device ID storage key.
-                @Code(name: "CloudKit Runtime Structure", file: RunAFullCloudKitPeerLifecycle-Runtime.swift)
+                @Code(name: "MyCloudPeerRuntime.swift", file: RunAFullCloudKitPeerLifecycle-Runtime.swift)
                 Record naming is product policy, not Loom policy, so make it explicit up front.
             }
 
             @Step {
                 Initialize the manager, then register the current Loom identity key and set up the share manager.
-                @Code(name: "Initialize and Register Identity", file: RunAFullCloudKitPeerLifecycle-Initialize.swift)
+                @Code(name: "MyCloudPeerRuntime.swift", file: RunAFullCloudKitPeerLifecycle-Initialize.swift)
                 The local Loom integration should continue working even when CloudKit is unavailable, so treat availability as optional runtime state.
             }
 
             @Step {
                 Make the runtime tolerant of signed-out iCloud, container misconfiguration, temporary account unavailability, and an empty share graph.
+                @Code(name: "MyCloudPeerRuntime.swift", file: RunAFullCloudKitPeerLifecycle-Initialize.swift)
             }
         }
     }
@@ -37,18 +38,19 @@
         @Steps {
             @Step {
                 Publish the peer record after the host has enough information to advertise itself coherently.
-                @Code(name: "Publish the Peer Record", file: RunAFullCloudKitPeerLifecycle-PublishPeer.swift)
+                @Code(name: "MyCloudPeerRuntime.swift", file: RunAFullCloudKitPeerLifecycle-PublishPeer.swift)
                 This keeps the CloudKit directory aligned with the host's real transport and trust surface.
             }
 
             @Step {
                 Create a share when the user wants to grant access, and accept inbound share metadata on the receiving side when access is granted externally.
-                @Code(name: "Create and Accept Shares", file: RunAFullCloudKitPeerLifecycle-Shares.swift)
+                @Code(name: "MyCloudPeerRuntime.swift", file: RunAFullCloudKitPeerLifecycle-Shares.swift)
                 Refresh participant state after membership changes so trust decisions do not lag behind accepted access.
             }
 
             @Step {
                 Keep the peer record fresh while the host is active by updating last-seen data from the same runtime paths that already know the host is alive.
+                @Code(name: "MyCloudPeerRuntime.swift", file: RunAFullCloudKitPeerLifecycle-Shares.swift)
             }
         }
     }
@@ -61,18 +63,19 @@
         @Steps {
             @Step {
                 Fetch own and shared peers for app-owned UI and device selection.
-                @Code(name: "Fetch Visible Peers", file: RunAFullCloudKitPeerLifecycle-FetchPeers.swift)
+                @Code(name: "MyCloudPeerRuntime.swift", file: RunAFullCloudKitPeerLifecycle-FetchPeers.swift)
                 Each CloudKit peer snapshot already includes decoded advertisement data plus remote and bootstrap hints, which makes it useful for a browser or picker.
             }
 
             @Step {
                 Attach a CloudKit-backed trust provider to the Loom runtime so same-account and shared peers can auto-trust when your product wants that behavior.
-                @Code(name: "CloudKit-Backed Trust", file: RunAFullCloudKitPeerLifecycle-TrustProvider.swift)
+                @Code(name: "MyCloudPeerRuntime.swift", file: RunAFullCloudKitPeerLifecycle-TrustProvider.swift)
                 CloudKit should become another trust input, not the only trust mechanism your app has.
             }
 
             @Step {
                 Refresh the participant cache and refetch peers after share changes so the browser UI and approval policy remain consistent with the current sharing graph.
+                @Code(name: "MyCloudPeerRuntime.swift", file: RunAFullCloudKitPeerLifecycle-TrustProvider.swift)
             }
         }
     }

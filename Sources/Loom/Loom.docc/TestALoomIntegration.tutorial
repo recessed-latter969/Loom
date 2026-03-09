@@ -13,17 +13,18 @@
         @Steps {
             @Step {
                 Write an advertisement round-trip test so product metadata survives Bonjour TXT conversion.
-                @Code(name: "Advertisement Round-Trip Test", file: TestALoomIntegration-AdvertisementRoundTrip.swift)
+                @Code(name: "LoomIntegrationTests.swift", file: TestALoomIntegration-AdvertisementRoundTrip.swift)
                 This kind of test catches wire compatibility regressions before they turn into discovery bugs.
             }
 
             @Step {
                 Test handshake rejection paths directly rather than only through a full runtime so invalid key identifiers, invalid signatures, replayed nonces, and protocol mismatches stay easy to reason about.
+                @Code(name: "LoomIntegrationTests.swift", file: TestALoomIntegration-ReplayProtector.swift)
             }
 
             @Step {
                 Use `LoomReplayProtector` in tests exactly the way production does.
-                @Code(name: "Replay Rejection Test", file: TestALoomIntegration-ReplayProtector.swift)
+                @Code(name: "LoomIntegrationTests.swift", file: TestALoomIntegration-ReplayProtector.swift)
                 Replay protection is simple enough that it should always have a direct test.
             }
         }
@@ -37,16 +38,18 @@
         @Steps {
             @Step {
                 Test your trust provider with explicit `LoomPeerIdentity` values and an isolated `LoomTrustStore`.
-                @Code(name: "Trust Provider Test", file: TestALoomIntegration-TrustProvider.swift)
+                @Code(name: "LoomIntegrationTests.swift", file: TestALoomIntegration-TrustProvider.swift)
                 Provider tests should stay focused on policy, not on UI prompts or connection closure behavior.
             }
 
             @Step {
                 Test manual approval behavior separately at the service level so the runtime proves what happens when approval is required, denied, timed out, or interrupted by connection closure.
+                @Code(name: "LoomIntegrationTests.swift", file: TestALoomIntegration-TrustProvider.swift)
             }
 
             @Step {
                 Use deterministic approval doubles and explicit state assertions so the service-level state machine remains reviewable.
+                @Code(name: "LoomIntegrationTests.swift", file: TestALoomIntegration-TrustProvider.swift)
             }
         }
     }
@@ -59,16 +62,18 @@
         @Steps {
             @Step {
                 Use serialized suites when a test touches global diagnostics or instrumentation state.
-                @Code(name: "Serialized Diagnostics Suite", file: TestALoomIntegration-SerializedDiagnosticsSuite.swift)
+                @Code(name: "LoomIntegrationTests.swift", file: TestALoomIntegration-SerializedDiagnosticsSuite.swift)
                 This mirrors the pattern Loom uses in its own test suite for registry-backed behavior.
             }
 
             @Step {
                 Reset diagnostics and instrumentation registries at the start of tests that depend on them so one test cannot silently influence another.
+                @Code(name: "LoomIntegrationTests.swift", file: TestALoomIntegration-SerializedDiagnosticsSuite.swift)
             }
 
             @Step {
                 Assert behavior rather than implementation details by checking that sinks receive events, removed sinks stop receiving them, context providers merge in order, and `LoomDiagnostics.run` both reports and rethrows.
+                @Code(name: "LoomIntegrationTests.swift", file: TestALoomIntegration-SerializedDiagnosticsSuite.swift)
             }
         }
     }
