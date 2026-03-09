@@ -3,7 +3,8 @@
 set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-TMP_DIR="$(mktemp -d "$ROOT_DIR/.build/docc.XXXXXX")"
+TMP_ROOT="${TMPDIR:-/tmp}"
+TMP_DIR="$(mktemp -d "$TMP_ROOT/loom-docc.XXXXXX")"
 SYMBOLGRAPH_FILTER_DIR="$TMP_DIR/symbolgraph"
 DUMP_STDOUT="$TMP_DIR/dump-symbol-graph.stdout"
 DUMP_STDERR="$TMP_DIR/dump-symbol-graph.stderr"
