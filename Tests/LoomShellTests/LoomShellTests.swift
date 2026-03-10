@@ -365,6 +365,7 @@ struct LoomShellTests {
 
         #expect(output.contains("__loom_interactive_ready__"))
         #expect(!output.contains("can't set tty pgrp"))
+        #expect(!output.contains("failed to claim foreground terminal"))
         #expect(events.contains(where: { event in
             if case let .exit(exit) = event {
                 return exit.exitCode == 0
@@ -410,6 +411,7 @@ struct LoomShellTests {
         }
 
         #expect(output.contains("__loom_flags__:on:on"))
+        #expect(!output.contains("failed to claim foreground terminal"))
         #expect(events.contains(where: { event in
             if case let .exit(exit) = event {
                 return exit.exitCode == 0

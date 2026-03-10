@@ -63,13 +63,6 @@ pid_t loom_shell_forkpty_spawn(
     loom_shell_reset_signal_mask();
     loom_shell_reset_signals();
 
-    if (tcsetpgrp(STDIN_FILENO, getpgrp()) != 0) {
-        loom_shell_child_fail(
-            "loom-shell: failed to claim foreground terminal\r\n",
-            sizeof("loom-shell: failed to claim foreground terminal\r\n") - 1
-        );
-    }
-
     if (working_directory != NULL && chdir(working_directory) != 0) {
         loom_shell_child_fail(
             "loom-shell: failed to change working directory\r\n",
