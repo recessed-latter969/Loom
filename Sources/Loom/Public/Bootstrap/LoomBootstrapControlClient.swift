@@ -74,7 +74,34 @@ public protocol LoomBootstrapControlClient: Sendable {
 
 /// Default bootstrap control transport based on a single line-delimited TCP request/response.
 public struct LoomDefaultBootstrapControlClient: LoomBootstrapControlClient {
-    public init() {}
+    private let fetchIdentity: @Sendable () async throws -> LoomAccountIdentity
+    private let signPayload: @Sendable (Data) async throws -> Data
+
+    public init() {
+        fetchIdentity = {
+            try await MainActor.run {
+                try LoomIdentityManager.shared.currentIdentity()
+            }
+        }
+        signPayload = { payload in
+            try await MainActor.run {
+                try LoomIdentityManager.shared.sign(payload)
+            }
+        }
+    }
+
+    public init(identityManager: LoomIdentityManager) {
+        fetchIdentity = {
+            try await MainActor.run {
+                try identityManager.currentIdentity()
+            }
+        }
+        signPayload = { payload in
+            try await MainActor.run {
+                try identityManager.sign(payload)
+            }
+        }
+    }
 
     public func requestStatus(
         endpoint: LoomBootstrapEndpoint,
@@ -172,9 +199,7 @@ private extension LoomDefaultBootstrapControlClient {
             throw LoomBootstrapControlError.protocolViolation("Bootstrap control nonce is too long.")
         }
 
-        let identity = try await MainActor.run {
-            try LoomIdentityManager.shared.currentIdentity()
-        }
+        let identity = try await fetchIdentity()
         let encryptedSHA256 = LoomBootstrapControlSecurity.payloadSHA256Hex(credentialsPayload?.combined)
         let payload = try LoomBootstrapControlSecurity.canonicalPayload(
             requestID: requestID,
@@ -184,9 +209,7 @@ private extension LoomDefaultBootstrapControlClient {
             timestampMs: timestampMs,
             nonce: nonce
         )
-        let signature = try await MainActor.run {
-            try LoomIdentityManager.shared.sign(payload)
-        }
+        let signature = try await signPayload(payload)
         let auth = LoomBootstrapControlAuthEnvelope(
             keyID: identity.keyID,
             publicKey: identity.publicKey,

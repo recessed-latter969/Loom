@@ -19,6 +19,7 @@ public final class LoomNode {
     public private(set) var discovery: LoomDiscovery?
 
     private var advertiser: BonjourAdvertiser?
+    private var directListeners: [LoomTransportKind: LoomDirectListener] = [:]
 
     public init(
         configuration: LoomNetworkConfiguration = .default,
@@ -64,6 +65,10 @@ public final class LoomNode {
     public func stopAdvertising() async {
         await advertiser?.stop()
         advertiser = nil
+        for listener in directListeners.values {
+            await listener.stop()
+        }
+        directListeners.removeAll()
     }
 
     public func updateAdvertisement(_ advertisement: LoomPeerAdvertisement) async {
@@ -72,6 +77,114 @@ public final class LoomNode {
 
     public func makeSession(connection: NWConnection) -> LoomSession {
         LoomSession(connection: connection)
+    }
+
+    public func makeAuthenticatedSession(
+        connection: NWConnection,
+        role: LoomSessionRole,
+        transportKind: LoomTransportKind
+    ) -> LoomAuthenticatedSession {
+        LoomAuthenticatedSession(
+            rawSession: LoomSession(connection: connection),
+            role: role,
+            transportKind: transportKind
+        )
+    }
+
+    public func makeConnection(
+        to endpoint: NWEndpoint,
+        using transportKind: LoomTransportKind
+    ) throws -> NWConnection {
+        let parameters = try LoomTransportParametersFactory.makeParameters(
+            for: transportKind,
+            enablePeerToPeer: configuration.enablePeerToPeer
+        )
+        return NWConnection(to: endpoint, using: parameters)
+    }
+
+    public func connect(
+        to endpoint: NWEndpoint,
+        using transportKind: LoomTransportKind,
+        hello: LoomSessionHelloRequest,
+        queue: DispatchQueue = .global(qos: .userInitiated)
+    ) async throws -> LoomAuthenticatedSession {
+        let connection = try makeConnection(to: endpoint, using: transportKind)
+        let identityManager = self.identityManager ?? LoomIdentityManager.shared
+        let session = makeAuthenticatedSession(
+            connection: connection,
+            role: .initiator,
+            transportKind: transportKind
+        )
+        _ = try await session.start(
+            localHello: hello,
+            identityManager: identityManager,
+            trustProvider: trustProvider,
+            queue: queue
+        )
+        return session
+    }
+
+    public func startAuthenticatedAdvertising(
+        serviceName: String,
+        helloProvider: @escaping @Sendable () async throws -> LoomSessionHelloRequest,
+        onSession: @escaping @Sendable (LoomAuthenticatedSession) -> Void
+    ) async throws -> [LoomTransportKind: UInt16] {
+        let identityManager = self.identityManager ?? LoomIdentityManager.shared
+        let baseHello = try await helloProvider()
+        let port = try await startAdvertising(
+            serviceName: serviceName,
+            advertisement: baseHello.advertisement
+        ) { [weak self] rawSession in
+            guard let self else { return }
+            let session = LoomAuthenticatedSession(rawSession: rawSession, role: .receiver, transportKind: .tcp)
+            Task {
+                do {
+                    let hello = try await helloProvider()
+                    _ = try await session.start(
+                        localHello: hello,
+                        identityManager: identityManager,
+                        trustProvider: self.trustProvider
+                    )
+                    onSession(session)
+                } catch {
+                    await session.cancel()
+                }
+            }
+        }
+
+        var ports: [LoomTransportKind: UInt16] = [.tcp: port]
+        guard configuration.enabledDirectTransports.contains(.quic) else {
+            return ports
+        }
+
+        let quicListener = LoomDirectListener(
+            transportKind: .quic,
+            enablePeerToPeer: configuration.enablePeerToPeer
+        )
+        let quicPort = try await quicListener.start(port: configuration.quicPort) { [weak self] connection in
+            guard let self else { return }
+            let session = LoomAuthenticatedSession(
+                rawSession: LoomSession(connection: connection),
+                role: .receiver,
+                transportKind: .quic
+            )
+            Task {
+                do {
+                    let hello = try await helloProvider()
+                    _ = try await session.start(
+                        localHello: hello,
+                        identityManager: identityManager,
+                        trustProvider: self.trustProvider
+                    )
+                    onSession(session)
+                } catch {
+                    await session.cancel()
+                }
+            }
+        }
+        directListeners[.quic] = quicListener
+        ports[.quic] = quicPort
+        return ports
     }
 }
 

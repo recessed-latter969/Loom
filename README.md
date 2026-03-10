@@ -46,6 +46,15 @@ Loom is a good fit for things like:
 - Bootstrap tools for flows like Wake-on-LAN and SSH handoff
 - Diagnostics and instrumentation hooks
 
+### App-facing shell package: `LoomShell`
+
+- Loom-native interactive shell sessions over authenticated Loom transport
+- macOS PTY host runtime for building a native host app quickly
+- Connection policy that prefers Loom-native direct paths before SSH fallback
+- Relay publication helpers for introducer-only remote access
+- OpenSSH fallback runtime with password or private-key authentication
+- Connection attempt reports that are usable in product UI
+
 ### Optional package: `LoomCloudKit`
 
 - CloudKit-backed peer sharing
@@ -68,6 +77,24 @@ Loom does not decide:
 
 Your app owns those decisions. Loom gives you the network foundation underneath them.
 
+## How Loom compares
+
+If you are deciding between `Loom` and `MultipeerConnectivity`, the main question is whether you want a convenient local-session API or a foundation you can keep building on.
+
+| Capability | `Loom` | `MultipeerConnectivity` |
+| --- | --- | --- |
+| Networking model | Bonjour discovery plus direct `Network.framework` sessions you can reason about and extend | High-level Apple-managed local peer sessions |
+| Identity model | Stable device identity and signed session setup are first-class | Peer identity is mostly session-oriented and app-specific trust modeling is left to you |
+| Trust decisions | Explicit trust providers and local trust storage | Invitation and certificate hooks exist, but there is no Loom-style trust layer to plug into your product |
+| Remote growth path | Includes relay/STUN support and optional `LoomCloudKit` peer sharing and trust | Focused on nearby/local networking with no built-in remote reachability story |
+| Product boundaries | Keeps your protocol, schema, and app roles above the transport layer | Easy to start, but the framework shape tends to leak into the rest of your app architecture |
+| Diagnostics and operability | Built-in diagnostics and instrumentation hooks | Much thinner observability surface |
+| Best fit | Apps that need a durable multi-device architecture, not just nearby messaging | Quick local-first prototypes or simple nearby collaboration |
+
+If your app only needs nearby discovery and a session quickly, `MultipeerConnectivity` is fine.
+
+If you need identity, trust, diagnostics, and a path beyond the local network, `Loom` is the better foundation.
+
 ## Installation
 
 Add Loom to your `Package.swift`:
@@ -85,6 +112,8 @@ Then add the product you want to your target:
     name: "MyApp",
     dependencies: [
         .product(name: "Loom", package: "Loom"),
+        // Add this to build a terminal or SSH app on top of Loom:
+        // .product(name: "LoomShell", package: "Loom"),
         // Add this too if you want CloudKit-backed peer sharing or trust:
         // .product(name: "LoomCloudKit", package: "Loom"),
     ]
@@ -204,6 +233,7 @@ That split is what keeps Loom reusable instead of turning it into someone else's
 If you want the deeper material, go to the docs:
 
 - [Documentation](https://ethanlipnik.github.io/Loom/documentation/loom/)
+- `LoomShell` docs in the package catalog under the `LoomShell` product
 - [Architecture notes](Architecture.md)
 
 ## Development

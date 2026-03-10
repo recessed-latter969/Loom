@@ -22,6 +22,10 @@ let package = Package(
             targets: ["Loom"]
         ),
         .library(
+            name: "LoomShell",
+            targets: ["LoomShell"]
+        ),
+        .library(
             name: "LoomCloudKit",
             targets: ["LoomCloudKit"]
         ),
@@ -44,9 +48,23 @@ let package = Package(
             name: "LoomCloudKit",
             dependencies: ["Loom"]
         ),
+        .target(
+            name: "LoomShell",
+            dependencies: [
+                "Loom",
+                .product(name: "NIOCore", package: "swift-nio"),
+                .product(name: "NIOPosix", package: "swift-nio"),
+                .product(name: "NIOConcurrencyHelpers", package: "swift-nio"),
+                .product(name: "NIOSSH", package: "swift-nio-ssh"),
+            ]
+        ),
         .testTarget(
             name: "LoomTests",
             dependencies: ["Loom"]
+        ),
+        .testTarget(
+            name: "LoomShellTests",
+            dependencies: ["LoomShell"]
         ),
         .testTarget(
             name: "LoomCloudKitTests",

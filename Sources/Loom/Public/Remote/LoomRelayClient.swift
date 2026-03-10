@@ -75,6 +75,7 @@ public struct LoomRelayConfiguration: Sendable {
 
 /// Transport type for a remote connectivity candidate.
 public enum LoomRelayCandidateTransport: String, Sendable, Codable {
+    case tcp
     case quic
 }
 
