@@ -1,6 +1,6 @@
 # Transfer Large Objects
 
-Loom now includes a generic bulk object transfer layer on top of authenticated sessions.
+Loom includes a generic bulk object transfer layer on top of authenticated sessions.
 
 The important boundary is unchanged:
 
@@ -11,7 +11,7 @@ The important boundary is unchanged:
 
 Use ``LoomNode/startAuthenticatedAdvertising(serviceName:helloProvider:onSession:)`` and ``LoomNode/connect(to:using:hello:queue:)`` so both peers negotiate an encrypted authenticated session before any transfer begins.
 
-`LoomAuthenticatedSession` now requires the `loom.session-encryption.v1` feature and encrypts post-handshake traffic automatically.
+`LoomAuthenticatedSession` requires the `loom.session-encryption.v1` feature and encrypts post-handshake traffic automatically.
 
 ## Create a transfer engine
 

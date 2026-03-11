@@ -4,7 +4,7 @@ Build high-throughput, low-latency Apple device-to-device features without build
 
 Loom is a Swift package for apps that need to find other devices, connect directly, verify identity, make trust decisions, and keep working when the local network is not the whole story.
 
-It is designed for Apple platforms, stays product-agnostic, and gives you a clean base for the part every multi-device app eventually has to build. The transport is built for high-throughput, low-latency data movement between Apple devices, and the package now includes a SwiftUI-first `LoomKit` surface for the apps that want a plug-and-play integration path.
+It is designed for Apple platforms, stays product-agnostic, and gives you a clean base for the part every multi-device app eventually has to build. The transport is built for high-throughput, low-latency data movement between Apple devices, and the package includes a SwiftUI-first `LoomKit` surface for apps that want a plug-and-play integration path.
 
 If you want the default integration path, start with `LoomKit`. Drop down to `Loom` only when you need to own discovery, advertising, handshake policy, or transport composition yourself.
 
