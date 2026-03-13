@@ -354,17 +354,48 @@ public final class LoomCloudKitManager {
     ) async -> Bool {
         guard isAvailable, let container else { return false }
 
-        do {
-            let recordID = CKRecord.ID(recordName: deviceID.uuidString)
-            let record = try await container.privateCloudDatabase.record(for: recordID)
-            if let publishedKeyID = record["identityKeyID"] as? String,
-               let publishedPublicKey = record["identityPublicKey"] as? Data,
-               publishedKeyID == keyID,
-               publishedPublicKey == publicKey {
-                return true
+        let recordID = CKRecord.ID(recordName: deviceID.uuidString)
+
+        for attempt in 0...Self.sameAccountIdentityVerificationRetryDelays.count {
+            do {
+                let record = try await container.privateCloudDatabase.record(for: recordID)
+                if let publishedKeyID = record["identityKeyID"] as? String,
+                   let publishedPublicKey = record["identityPublicKey"] as? Data,
+                   publishedKeyID == keyID,
+                   publishedPublicKey == publicKey {
+                    return true
+                }
+
+                guard let retryDelay = Self.sameAccountIdentityVerificationRetryDelay(afterAttempt: attempt) else {
+                    LoomLogger.cloud(
+                        "Same-account published identity did not match authenticated identity for device \(deviceID.uuidString)"
+                    )
+                    return false
+                }
+
+                do {
+                    try await Task.sleep(for: retryDelay)
+                } catch {
+                    return false
+                }
+            } catch {
+                if Self.isMissingPublishedIdentityLookupError(error) {
+                    guard let retryDelay = Self.sameAccountIdentityVerificationRetryDelay(afterAttempt: attempt) else {
+                        LoomLogger.cloud("Same-account published identity not found for device \(deviceID.uuidString)")
+                        return false
+                    }
+
+                    do {
+                        try await Task.sleep(for: retryDelay)
+                    } catch {
+                        return false
+                    }
+                    continue
+                }
+
+                LoomLogger.error(.cloud, error: error, message: "Failed to verify same-account published identity: ")
+                return false
             }
-        } catch {
-            LoomLogger.error(.cloud, error: error, message: "Failed to verify same-account published identity: ")
         }
 
         return false
@@ -429,8 +460,24 @@ public final class LoomCloudKitManager {
 // MARK: - Helpers
 
 extension LoomCloudKitManager {
+    private nonisolated static let sameAccountIdentityVerificationRetryDelays: [Duration] = [
+        .milliseconds(200),
+        .milliseconds(400),
+        .milliseconds(800),
+    ]
+
     static func identityCacheKey(keyID: String, publicKey: Data) -> String {
         "\(keyID)|\(publicKey.base64EncodedString())"
+    }
+
+    nonisolated static func isMissingPublishedIdentityLookupError(_ error: any Error) -> Bool {
+        let nsError = error as NSError
+        return nsError.domain == CKError.errorDomain && nsError.code == CKError.unknownItem.rawValue
+    }
+
+    nonisolated static func sameAccountIdentityVerificationRetryDelay(afterAttempt attempt: Int) -> Duration? {
+        guard sameAccountIdentityVerificationRetryDelays.indices.contains(attempt) else { return nil }
+        return sameAccountIdentityVerificationRetryDelays[attempt]
     }
 
     /// Returns a human-readable description of a CloudKit account status.
