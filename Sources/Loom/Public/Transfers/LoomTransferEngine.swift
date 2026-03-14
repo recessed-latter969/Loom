@@ -391,6 +391,11 @@ public actor LoomTransferEngine {
         guard var state = outgoingTransfers[id] else {
             throw LoomTransferError.missingTransferState
         }
+        guard resumeOffset <= state.offer.byteLength else {
+            throw LoomTransferError.protocolViolation(
+                "Invalid Loom transfer resume offset \(resumeOffset) for byteLength \(state.offer.byteLength)."
+            )
+        }
         await scheduler.registerTransfer(
             id: id,
             remainingBytes: state.offer.byteLength - resumeOffset

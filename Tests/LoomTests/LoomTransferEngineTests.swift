@@ -252,6 +252,43 @@ struct LoomTransferEngineTests {
         #expect(incomingTerminal?.state == .cancelled)
     }
 
+    @MainActor
+    @Test("Invalid resume offsets are rejected without crashing the sender")
+    func invalidResumeOffsetIsRejected() async throws {
+        let pair = try await makeTransferPair()
+        defer {
+            Task {
+                await pair.stop()
+            }
+        }
+        try await pair.startSessions()
+
+        let sender = LoomTransferEngine(session: pair.client)
+        let receiver = LoomTransferEngine(session: pair.server)
+        let sourceData = Data("resume bounds".utf8)
+        let source = MemoryTransferSource(data: sourceData)
+        let offer = LoomTransferOffer(
+            logicalName: "bounds.txt",
+            byteLength: UInt64(sourceData.count)
+        )
+
+        let incomingTask = Task<LoomIncomingTransfer?, Never> {
+            for await incoming in receiver.incomingTransfers {
+                return incoming
+            }
+            return nil
+        }
+
+        let outgoing = try await sender.offerTransfer(offer, source: source)
+        let incoming = try #require(await incomingTask.value)
+        let sink = MemoryTransferSink(initialData: sourceData)
+        let invalidOffset = UInt64(sourceData.count + 1)
+        try await incoming.accept(using: sink, resumeOffset: invalidOffset)
+
+        let outgoingTerminal = await terminalProgress(from: outgoing.progressEvents)
+        #expect(outgoingTerminal?.state == .failed)
+    }
+
     private func waitUntil(
         timeout: Duration = .seconds(1),
         condition: @escaping @Sendable () async -> Bool
