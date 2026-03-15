@@ -104,11 +104,12 @@ public final class LoomNode {
 
     public func makeConnection(
         to endpoint: NWEndpoint,
-        using transportKind: LoomTransportKind
+        using transportKind: LoomTransportKind,
+        enablePeerToPeer: Bool? = nil
     ) throws -> NWConnection {
         let parameters = try LoomTransportParametersFactory.makeParameters(
             for: transportKind,
-            enablePeerToPeer: configuration.enablePeerToPeer
+            enablePeerToPeer: enablePeerToPeer ?? configuration.enablePeerToPeer
         )
         return NWConnection(to: endpoint, using: parameters)
     }
@@ -117,9 +118,10 @@ public final class LoomNode {
         to endpoint: NWEndpoint,
         using transportKind: LoomTransportKind,
         hello: LoomSessionHelloRequest,
+        enablePeerToPeer: Bool? = nil,
         queue: DispatchQueue = .global(qos: .userInitiated)
     ) async throws -> LoomAuthenticatedSession {
-        let connection = try makeConnection(to: endpoint, using: transportKind)
+        let connection = try makeConnection(to: endpoint, using: transportKind, enablePeerToPeer: enablePeerToPeer)
         let identityManager = self.identityManager ?? LoomIdentityManager.shared
         let session = makeAuthenticatedSession(
             connection: connection,
