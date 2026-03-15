@@ -123,11 +123,12 @@ public final class LoomNode {
     ) async throws -> LoomAuthenticatedSession {
         let resolvedEnablePeerToPeer = enablePeerToPeer ?? configuration.enablePeerToPeer
 
-        if case .service = endpoint, resolvedEnablePeerToPeer {
-            return try await connectWithP2PRace(
+        if case .service = endpoint {
+            return try await connectWithServiceEndpointRace(
                 to: endpoint,
                 using: transportKind,
                 hello: hello,
+                enablePeerToPeer: resolvedEnablePeerToPeer,
                 queue: queue
             )
         }
@@ -152,28 +153,29 @@ public final class LoomNode {
         }
     }
 
-    /// Races a P2P connection (via Bonjour service endpoint) against a resolved non-P2P
+    /// Races a Bonjour `.service` endpoint connection against a resolved `.hostPort`
     /// fallback to work around the macOS NECP TLV encoding bug that intermittently prevents
-    /// peer-to-peer NWConnections from reaching `.ready` state.
-    private func connectWithP2PRace(
+    /// service-endpoint NWConnections from reaching `.ready` state. This affects all Bonjour
+    /// service endpoints when network extensions (VPNs, Tailscale, etc.) are present.
+    private func connectWithServiceEndpointRace(
         to serviceEndpoint: NWEndpoint,
         using transportKind: LoomTransportKind,
         hello: LoomSessionHelloRequest,
+        enablePeerToPeer: Bool,
         queue: DispatchQueue
     ) async throws -> LoomAuthenticatedSession {
-        let tracker = P2PRaceSessionTracker()
+        let tracker = ServiceEndpointRaceSessionTracker()
         let identityManager = self.identityManager ?? LoomIdentityManager.shared
         let trustProvider = self.trustProvider
-        let enablePeerToPeerForResolution = configuration.enablePeerToPeer
 
-        LoomLogger.session("Racing P2P and resolved endpoint for \(serviceEndpoint)")
+        LoomLogger.session("Racing service endpoint and resolved endpoint for \(serviceEndpoint)")
 
         return try await withThrowingTaskGroup(of: LoomAuthenticatedSession?.self) { group in
             group.addTask {
                 do {
                     let parameters = try LoomTransportParametersFactory.makeParameters(
                         for: transportKind,
-                        enablePeerToPeer: true
+                        enablePeerToPeer: enablePeerToPeer
                     )
                     let connection = NWConnection(to: serviceEndpoint, using: parameters)
                     let session = LoomAuthenticatedSession(
@@ -198,11 +200,11 @@ public final class LoomNode {
                         await result.cancel()
                         return nil
                     }
-                    LoomLogger.session("P2P race: primary (peer-to-peer) candidate connected")
+                    LoomLogger.session("Service endpoint race: primary (service) candidate connected")
                     return result
                 } catch {
                     if !(error is CancellationError) {
-                        LoomLogger.session("P2P race: primary candidate failed: \(error.localizedDescription)")
+                        LoomLogger.session("Service endpoint race: primary candidate failed: \(error.localizedDescription)")
                     }
                     return nil
                 }
@@ -219,17 +221,17 @@ public final class LoomNode {
                 do {
                     resolvedEndpoint = try await LoomBonjourServiceEndpointResolver.resolve(
                         endpoint: serviceEndpoint,
-                        enablePeerToPeer: enablePeerToPeerForResolution
+                        enablePeerToPeer: enablePeerToPeer
                     )
                 } catch {
-                    LoomLogger.session("P2P race: fallback resolution failed: \(error.localizedDescription)")
+                    LoomLogger.session("Service endpoint race: fallback resolution failed: \(error.localizedDescription)")
                     return nil
                 }
 
                 do {
                     let parameters = try LoomTransportParametersFactory.makeParameters(
                         for: transportKind,
-                        enablePeerToPeer: false
+                        enablePeerToPeer: enablePeerToPeer
                     )
                     let connection = NWConnection(to: resolvedEndpoint, using: parameters)
                     let session = LoomAuthenticatedSession(
@@ -255,12 +257,12 @@ public final class LoomNode {
                         return nil
                     }
                     LoomLogger.session(
-                        "P2P race: fallback (resolved, no P2P) candidate connected to \(resolvedEndpoint)"
+                        "Service endpoint race: fallback (resolved) candidate connected to \(resolvedEndpoint)"
                     )
                     return result
                 } catch {
                     if !(error is CancellationError) {
-                        LoomLogger.session("P2P race: fallback candidate failed: \(error.localizedDescription)")
+                        LoomLogger.session("Service endpoint race: fallback candidate failed: \(error.localizedDescription)")
                     }
                     return nil
                 }
@@ -276,11 +278,11 @@ public final class LoomNode {
                 candidatesFinished += 1
                 if candidatesFinished >= 2 {
                     group.cancelAll()
-                    throw LoomError.protocolError("All P2P race candidates failed for \(serviceEndpoint)")
+                    throw LoomError.protocolError("All service endpoint race candidates failed for \(serviceEndpoint)")
                 }
             }
 
-            throw LoomError.protocolError("P2P race ended unexpectedly")
+            throw LoomError.protocolError("Service endpoint race ended unexpectedly")
         }
     }
 
@@ -478,8 +480,8 @@ public final class LoomSession: @unchecked Sendable, Hashable {
     }
 }
 
-/// Tracks race candidates and ensures only one winner during P2P connection racing.
-private actor P2PRaceSessionTracker {
+/// Tracks race candidates and ensures only one winner during service endpoint connection racing.
+private actor ServiceEndpointRaceSessionTracker {
     private var sessions: [LoomAuthenticatedSession] = []
     private(set) var winner: LoomAuthenticatedSession?
 
