@@ -146,6 +146,7 @@ mkdir -p "$OUTPUT_PATH/tutorials" "$OUTPUT_PATH/data/tutorials"
 copy_if_exists "$LOOM_KIT_STATIC_DIR/tutorials/loomkit" "$OUTPUT_PATH/tutorials"
 copy_if_exists "$LOOM_KIT_STATIC_DIR/data/tutorials/loomkit" "$OUTPUT_PATH/data/tutorials"
 copy_if_exists "$LOOM_KIT_STATIC_DIR/data/tutorials/loomkittutorials.json" "$OUTPUT_PATH/data/tutorials"
+copy_if_exists "$LOOM_KIT_STATIC_DIR/tutorials/loomkittutorials" "$OUTPUT_PATH/tutorials"
 rsync -a "$LOOM_SHELL_STATIC_DIR/data/documentation/loomshell" "$OUTPUT_PATH/data/documentation/"
 rsync -a "$LOOM_SHELL_STATIC_DIR/data/documentation/loomshell.json" "$OUTPUT_PATH/data/documentation/"
 rsync -a "$LOOM_SHELL_STATIC_DIR/documentation/loomshell" "$OUTPUT_PATH/documentation/"
@@ -170,3 +171,10 @@ cat >"$OUTPUT_PATH/documentation/loomshell/build-a-shell-app-on-loom/index.html"
 EOF
 
 touch "$OUTPUT_PATH/.nojekyll"
+
+# 404.html SPA fallback for GitHub Pages — lets the DocC JS router handle any URL.
+SPA_SHELL="$OUTPUT_PATH/documentation/loom/index.html"
+if [[ -f "$SPA_SHELL" ]]; then
+  cp "$SPA_SHELL" "$OUTPUT_PATH/404.html"
+  cp "$SPA_SHELL" "$OUTPUT_PATH/index.html"
+fi

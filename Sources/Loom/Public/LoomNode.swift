@@ -124,8 +124,23 @@ public final class LoomNode {
         requiredInterfaceType: NWInterface.InterfaceType? = nil,
         queue: DispatchQueue = .global(qos: .userInitiated)
     ) async throws -> LoomAuthenticatedSession {
+        let resolvedEnablePeerToPeer = enablePeerToPeer ?? configuration.enablePeerToPeer
+
+        // Pre-resolve service endpoints when P2P is enabled so the NW
+        // framework gets a concrete AWDL link-local address instead of
+        // racing WiFi vs AWDL internally (WiFi usually wins that race).
+        var connectionEndpoint = endpoint
+        if case .service = endpoint, resolvedEnablePeerToPeer, requiredInterfaceType == nil {
+            if let resolved = try? await LoomBonjourServiceEndpointResolver.resolve(
+                endpoint: endpoint,
+                enablePeerToPeer: true
+            ) {
+                connectionEndpoint = resolved
+            }
+        }
+
         let connection = try makeConnection(
-            to: endpoint,
+            to: connectionEndpoint,
             using: transportKind,
             enablePeerToPeer: enablePeerToPeer,
             requiredInterfaceType: requiredInterfaceType
