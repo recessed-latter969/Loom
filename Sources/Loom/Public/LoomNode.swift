@@ -216,7 +216,7 @@ public final class LoomNode {
                         await result.cancel()
                         return nil
                     }
-                    LoomLogger.session("Service endpoint race: primary (service) candidate connected")
+                    LoomLogger.session("Service endpoint race winner: service (default routing)")
                     return result
                 } catch {
                     if !(error is CancellationError) {
@@ -275,7 +275,7 @@ public final class LoomNode {
                             await result.cancel()
                             return nil
                         }
-                        LoomLogger.session("Service endpoint race: ethernet candidate connected to \(resolvedEndpoint)")
+                        LoomLogger.session("Service endpoint race winner: ethernet → \(resolvedEndpoint)")
                         return result
                     } catch {
                         if !(error is CancellationError) {
@@ -286,15 +286,11 @@ public final class LoomNode {
                 }
             }
 
-            // MARK: Candidate 3 — Resolved + P2P (400ms delay, only if P2P enabled)
+            // MARK: Candidate 3 — Resolved + P2P (immediate, only if P2P enabled)
 
             if addInterfaceCandidates, enablePeerToPeer {
                 candidateCount += 1
                 group.addTask {
-                    do {
-                        try await Task.sleep(for: .milliseconds(400))
-                    } catch { return nil }
-
                     let resolvedEndpoint: NWEndpoint
                     do {
                         resolvedEndpoint = try await LoomBonjourServiceEndpointResolver.resolve(
@@ -334,7 +330,7 @@ public final class LoomNode {
                             await result.cancel()
                             return nil
                         }
-                        LoomLogger.session("Service endpoint race: p2p candidate connected to \(resolvedEndpoint)")
+                        LoomLogger.session("Service endpoint race winner: p2p/AWDL → \(resolvedEndpoint)")
                         return result
                     } catch {
                         if !(error is CancellationError) {
@@ -394,7 +390,7 @@ public final class LoomNode {
                             await result.cancel()
                             return nil
                         }
-                        LoomLogger.session("Service endpoint race: wifi candidate connected to \(resolvedEndpoint)")
+                        LoomLogger.session("Service endpoint race winner: wifi → \(resolvedEndpoint)")
                         return result
                     } catch {
                         if !(error is CancellationError) {
