@@ -49,7 +49,7 @@ public final class LoomSTUNKeepalive: @unchecked Sendable {
         localPort: UInt16,
         stunHost: String = "stun.cloudflare.com",
         stunPort: UInt16 = 3478,
-        interval: Duration = .seconds(25)
+        interval: Duration = .seconds(10)
     ) {
         self.localPort = localPort
         self.stunHost = stunHost

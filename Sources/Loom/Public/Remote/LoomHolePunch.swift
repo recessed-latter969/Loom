@@ -100,4 +100,34 @@ public enum LoomHolePunch {
             }
         }
     }
+
+    /// Sends hole-punch packets continuously until the returned task is cancelled.
+    ///
+    /// Each iteration sends a burst of packets to every QUIC candidate, then
+    /// sleeps for `interval` before repeating.  Cancel the returned task to stop.
+    ///
+    /// - Parameters:
+    ///   - localPort: The local UDP port to send from.
+    ///   - candidates: Remote peer candidates to punch toward.
+    ///   - interval: Time between bursts (default 500 ms).
+    ///   - burstCount: Packets per candidate per burst (default 2).
+    /// - Returns: A cancellable task that runs until cancelled.
+    public static func punchContinuously(
+        from localPort: UInt16,
+        candidates: [LoomRemoteCandidate],
+        interval: Duration = .milliseconds(500),
+        burstCount: Int = 2
+    ) -> Task<Void, Never> {
+        Task {
+            while !Task.isCancelled {
+                await punchAll(
+                    from: localPort,
+                    candidates: candidates,
+                    count: burstCount
+                )
+                guard !Task.isCancelled else { break }
+                try? await Task.sleep(for: interval)
+            }
+        }
+    }
 }

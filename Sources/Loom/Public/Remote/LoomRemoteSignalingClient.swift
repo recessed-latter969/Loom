@@ -461,6 +461,63 @@ public final class LoomRemoteSignalingClient {
         )
     }
 
+    /// Creates a WebSocket connection to the signaling server for real-time
+    /// session notifications (e.g., instant client-joined events).
+    ///
+    /// The upgrade request is signed with the current identity at call time.
+    ///
+    /// - Parameters:
+    ///   - sessionID: The signaling session ID.
+    ///   - role: "host" or "client".
+    /// - Returns: A configured `LoomRemoteSignalingWebSocket` ready to connect,
+    ///   or `nil` if signing fails.
+    public func makeWebSocket(
+        sessionID: String,
+        role: String
+    ) -> LoomRemoteSignalingWebSocket? {
+        guard let identity = try? identityManager.currentIdentity() else { return nil }
+
+        let path = "/v1/session/ws"
+        let nonce = UUID().uuidString.lowercased()
+        let timestampMs = LoomIdentitySigning.currentTimestampMs()
+        let bodyHash = Self.sha256Hex(Data("-".utf8))
+        let headerPrefix = configuration.headerPrefix
+        let appAuth = configuration.appAuthentication
+
+        let appPayload = Self.appAuthPayload(
+            method: "GET", path: path, bodySHA256: bodyHash,
+            appID: appAuth.appID, timestampMs: timestampMs, nonce: nonce
+        )
+        let appSig = Self.hmacSHA256Base64(payload: appPayload, secret: appAuth.sharedSecret)
+
+        guard let workerPayload = try? LoomIdentitySigning.workerRequestPayload(
+            method: "GET", path: path, bodySHA256: bodyHash,
+            keyID: identity.keyID, timestampMs: timestampMs, nonce: nonce
+        ),
+              let sig = try? identityManager.sign(workerPayload) else { return nil }
+
+        var headers: [(String, String)] = [
+            ("\(headerPrefix)-session-id", sessionID),
+            ("\(headerPrefix)-app-id", appAuth.appID),
+            ("\(headerPrefix)-app-timestamp-ms", "\(timestampMs)"),
+            ("\(headerPrefix)-app-nonce", nonce),
+            ("\(headerPrefix)-app-signature", appSig),
+            ("\(headerPrefix)-key-id", identity.keyID),
+            ("\(headerPrefix)-public-key", identity.publicKey.base64EncodedString()),
+            ("\(headerPrefix)-timestamp-ms", "\(timestampMs)"),
+            ("\(headerPrefix)-nonce", nonce),
+            ("\(headerPrefix)-signature", sig.base64EncodedString()),
+            ("\(headerPrefix)-body-sha256", bodyHash),
+        ]
+
+        return LoomRemoteSignalingWebSocket(
+            baseURL: configuration.baseURL,
+            sessionID: sessionID,
+            role: role,
+            preSignedHeaders: headers
+        )
+    }
+
     private func sendSignedRequest(
         sessionID: String,
         method: String,
