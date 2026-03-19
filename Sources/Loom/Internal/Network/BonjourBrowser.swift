@@ -426,10 +426,12 @@ public final class LoomDiscovery {
 
     private func transportRank(_ transportKind: LoomTransportKind) -> Int {
         switch transportKind {
-        case .quic:
+        case .udp:
             return 0
-        case .tcp:
+        case .quic:
             return 1
+        case .tcp:
+            return 2
         }
     }
 

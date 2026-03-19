@@ -220,10 +220,12 @@ public final class LoomOverlayDirectory {
 
     private static func transportRank(_ transportKind: LoomTransportKind) -> Int {
         switch transportKind {
-        case .quic:
+        case .udp:
             0
-        case .tcp:
+        case .quic:
             1
+        case .tcp:
+            2
         }
     }
 

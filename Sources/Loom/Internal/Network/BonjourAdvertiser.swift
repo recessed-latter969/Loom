@@ -9,6 +9,19 @@ import Foundation
 import Network
 
 /// Advertises a Loom peer service via Bonjour.
+///
+/// This listener uses TCP parameters solely for Bonjour service registration
+/// and macOS local network permission grants. No TCP connections are ever
+/// accepted or established through it. Actual sessions are handled by a
+/// separate ``LoomDirectListener`` configured for UDP.
+///
+/// The reason TCP is used here: `NWConnection` cannot resolve Bonjour service
+/// endpoints whose type ends in `_udp` — the connection times out without
+/// completing DNS-SD resolution. Until Apple's Network framework supports
+/// `_udp` service endpoint resolution, the Bonjour advertisement must use a
+/// `_tcp` service type so that clients can discover the host. Clients read
+/// the UDP port from the TXT record and connect directly via
+/// `NWEndpoint.hostPort`.
 actor BonjourAdvertiser {
     private var listener: NWListener?
     private let serviceType: String
@@ -36,11 +49,14 @@ actor BonjourAdvertiser {
 
         validateBonjourInfoPlistKeys(serviceType: serviceType)
 
+        // TCP listener for Bonjour service registration only — enables discovery
+        // and local network permissions. Actual sessions use the separate UDP listener.
+        // TODO: Investigate using a UDP Bonjour listener once NWConnection supports
+        // resolving _udp service endpoints (rdar://FB...).
         let parameters = NWParameters.tcp
         parameters.serviceClass = .interactiveVideo
         parameters.includePeerToPeer = enablePeerToPeer
 
-        // Favor low-latency control delivery and quicker dead-peer detection.
         if let tcpOptions = parameters.defaultProtocolStack.transportProtocol as? NWProtocolTCP.Options {
             tcpOptions.noDelay = true
             tcpOptions.enableKeepalive = true

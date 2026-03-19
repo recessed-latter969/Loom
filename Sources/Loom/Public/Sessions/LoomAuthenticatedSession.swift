@@ -112,7 +112,7 @@ public actor LoomAuthenticatedSession: LoomSessionProtocol {
     public private(set) var state: LoomAuthenticatedSessionState = .idle
     public private(set) var context: LoomAuthenticatedSessionContext?
 
-    private let framedConnection: LoomFramedConnection
+    private let transport: any LoomSessionTransport
     private let incomingStreamContinuation: AsyncStream<LoomMultiplexedStream>.Continuation
     private let incomingStreamObservers = LoomAsyncBroadcaster<LoomMultiplexedStream>()
     private let stateObservers = LoomAsyncBroadcaster<LoomAuthenticatedSessionState>()
@@ -134,7 +134,12 @@ public actor LoomAuthenticatedSession: LoomSessionProtocol {
         self.rawSession = rawSession
         self.role = role
         self.transportKind = transportKind
-        framedConnection = LoomFramedConnection(connection: rawSession.connection)
+        switch transportKind {
+        case .tcp, .quic:
+            transport = LoomFramedConnection(connection: rawSession.connection)
+        case .udp:
+            transport = LoomReliableChannel(connection: rawSession.connection)
+        }
         let (stream, continuation) = AsyncStream.makeStream(of: LoomMultiplexedStream.self)
         incomingStreams = stream
         incomingStreamContinuation = continuation
@@ -190,7 +195,7 @@ public actor LoomAuthenticatedSession: LoomSessionProtocol {
 
         updateState(.handshaking)
         rawSession.start(queue: queue)
-        try await framedConnection.awaitReady()
+        try await transport.awaitReady()
 
         let preparedHello = try await MainActor.run {
             try LoomSessionHelloValidator.makePreparedSignedHello(
@@ -199,9 +204,9 @@ public actor LoomAuthenticatedSession: LoomSessionProtocol {
             )
         }
         let helloData = try JSONEncoder().encode(preparedHello.hello)
-        try await framedConnection.sendFrame(helloData)
+        try await transport.sendMessage(helloData)
 
-        let remoteHelloData = try await framedConnection.readFrame(
+        let remoteHelloData = try await transport.receiveMessage(
             maxBytes: LoomMessageLimits.maxHelloFrameBytes
         )
         let remoteHello = try JSONDecoder().decode(LoomSessionHello.self, from: remoteHelloData)
@@ -295,7 +300,7 @@ public actor LoomAuthenticatedSession: LoomSessionProtocol {
     private func runReadLoop() async {
         do {
             while !Task.isCancelled {
-                let data = try await framedConnection.readFrame(
+                let data = try await transport.receiveMessage(
                     maxBytes: LoomMessageLimits.maxFrameBytes
                 )
                 let envelope = try decryptEnvelope(data)
@@ -385,7 +390,7 @@ public actor LoomAuthenticatedSession: LoomSessionProtocol {
         var wireFrame = Data(capacity: encryptedPayload.count + 1)
         wireFrame.append(trafficClass.rawValue)
         wireFrame.append(encryptedPayload)
-        try await framedConnection.sendFrame(wireFrame)
+        try await transport.sendMessage(wireFrame)
     }
 
     private func decryptEnvelope(_ wireFrame: Data) throws -> LoomSessionStreamEnvelope {

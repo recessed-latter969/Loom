@@ -11,5 +11,6 @@ import Foundation
 public enum LoomTransportKind: String, Codable, CaseIterable, Sendable {
     case tcp
     case quic
+    case udp
 }
 

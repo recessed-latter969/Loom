@@ -120,6 +120,9 @@ struct LoomConnectionCoordinatorTests {
                 connector: { target, _ in
                     await attemptRecorder.record(target.transportKind)
                     switch target.transportKind {
+                    case .udp:
+                        try await Task.sleep(for: .milliseconds(10))
+                        return makeCoordinatorTestSession(transportKind: .udp)
                     case .quic:
                         try await Task.sleep(for: .milliseconds(250))
                         return makeCoordinatorTestSession(transportKind: .quic)
@@ -164,6 +167,9 @@ struct LoomConnectionCoordinatorTests {
             connector: { target, _ in
                 await attemptRecorder.record(target.transportKind)
                 switch target.transportKind {
+                case .udp:
+                    try await Task.sleep(for: .milliseconds(2))
+                    return makeCoordinatorTestSession(transportKind: .udp)
                 case .quic:
                     try await Task.sleep(for: .milliseconds(50))
                     return makeCoordinatorTestSession(transportKind: .quic)

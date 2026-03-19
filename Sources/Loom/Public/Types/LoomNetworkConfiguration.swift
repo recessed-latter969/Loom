@@ -13,6 +13,7 @@ public struct LoomNetworkConfiguration: Sendable {
     public var controlPort: UInt16
     public var dataPort: UInt16
     public var quicPort: UInt16
+    public var udpPort: UInt16
     public var overlayProbePort: UInt16?
     public var maxPacketSize: Int
     public var enablePeerToPeer: Bool
@@ -26,6 +27,7 @@ public struct LoomNetworkConfiguration: Sendable {
         controlPort: UInt16 = 0,
         dataPort: UInt16 = 0,
         quicPort: UInt16 = 0,
+        udpPort: UInt16 = 0,
         overlayProbePort: UInt16? = nil,
         maxPacketSize: Int = Loom.defaultMaxPacketSize,
         enablePeerToPeer: Bool = true,
@@ -38,6 +40,7 @@ public struct LoomNetworkConfiguration: Sendable {
         self.controlPort = controlPort
         self.dataPort = dataPort
         self.quicPort = quicPort
+        self.udpPort = udpPort
         self.overlayProbePort = overlayProbePort
         self.maxPacketSize = maxPacketSize
         self.enablePeerToPeer = enablePeerToPeer
@@ -52,6 +55,7 @@ public struct LoomNetworkConfiguration: Sendable {
         controlPort: UInt16 = 0,
         dataPort: UInt16 = 0,
         quicPort: UInt16 = 0,
+        udpPort: UInt16 = 0,
         overlayProbePort: UInt16? = nil,
         maxPacketSize: Int = Loom.defaultMaxPacketSize,
         enablePeerToPeer: Bool = true,
@@ -64,6 +68,7 @@ public struct LoomNetworkConfiguration: Sendable {
             controlPort: controlPort,
             dataPort: dataPort,
             quicPort: quicPort,
+            udpPort: udpPort,
             overlayProbePort: overlayProbePort,
             maxPacketSize: maxPacketSize,
             enablePeerToPeer: enablePeerToPeer,
@@ -79,6 +84,7 @@ public struct LoomNetworkConfiguration: Sendable {
         controlPort: UInt16 = 0,
         dataPort: UInt16 = 0,
         quicPort: UInt16 = 0,
+        udpPort: UInt16 = 0,
         maxPacketSize: Int = Loom.defaultMaxPacketSize,
         enablePeerToPeer: Bool = true,
         requireEncryptedMediaOnLocalNetwork: Bool = false,
@@ -90,6 +96,7 @@ public struct LoomNetworkConfiguration: Sendable {
             controlPort: controlPort,
             dataPort: dataPort,
             quicPort: quicPort,
+            udpPort: udpPort,
             overlayProbePort: nil,
             maxPacketSize: maxPacketSize,
             enablePeerToPeer: enablePeerToPeer,

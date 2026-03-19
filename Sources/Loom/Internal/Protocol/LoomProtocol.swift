@@ -26,6 +26,9 @@ package let loomVideoRegistrationMagic: UInt32 = 0x4C4F_4D46 // "LOMF"
 package let loomAudioRegistrationMagic: UInt32 = 0x4C4F_4D41 // "LOMA"
 package let loomQualityTestRegistrationMagic: UInt32 = 0x4C4F_4D51 // "LOMQ"
 
+/// Reliable-UDP control channel magic value.
+package let loomReliablePacketMagic: UInt32 = 0x4C4F_4D55 // "LOMU"
+
 /// Default maximum UDP packet size (header + payload) to avoid IPv6 fragmentation.
 /// 1200 bytes keeps packets under the IPv6 minimum MTU (1280) once IP/UDP headers are added.
 public let loomDefaultMaxPacketSize: Int = 1200

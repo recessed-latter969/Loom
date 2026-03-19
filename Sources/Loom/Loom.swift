@@ -12,8 +12,16 @@ package typealias StreamID = UInt16
 package typealias StreamSessionID = UUID
 
 public enum Loom {
-    public static let version = "1.3.0"
+    public static let version = "1.6.0"
     public static let protocolVersion: UInt8 = 2
+    /// Default Bonjour service type for peer discovery.
+    ///
+    /// Uses `_tcp` suffix despite actual sessions running over UDP because
+    /// `NWConnection` cannot resolve `_udp` Bonjour service endpoints
+    /// (the connection times out during DNS-SD resolution). The TCP
+    /// `NWListener` in ``BonjourAdvertiser`` exists only for service
+    /// registration — no TCP connections are established. Clients read
+    /// the UDP port from the TXT record and connect directly.
     public static let serviceType = "_loom._tcp"
     public static let defaultControlPort: UInt16 = 9847
     public static let defaultDataPort: UInt16 = 9848

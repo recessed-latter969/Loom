@@ -263,6 +263,8 @@ public struct LoomPeerAdvertisement: Codable, Hashable, Sendable {
     private static let tcpPathKey = "tcp-path"
     private static let quicPortKey = "quic"
     private static let quicPathKey = "quic-path"
+    private static let udpPortKey = "udp"
+    private static let udpPathKey = "udp-path"
     private static let reservedKeys: Set<String> = [
         protocolVersionKey,
         deviceIDKey,
@@ -275,6 +277,8 @@ public struct LoomPeerAdvertisement: Codable, Hashable, Sendable {
         tcpPathKey,
         quicPortKey,
         quicPathKey,
+        udpPortKey,
+        udpPathKey,
     ]
 
     private static func directTransportKey(for transportKind: LoomTransportKind) -> String {
@@ -283,6 +287,8 @@ public struct LoomPeerAdvertisement: Codable, Hashable, Sendable {
             tcpPortKey
         case .quic:
             quicPortKey
+        case .udp:
+            udpPortKey
         }
     }
 
@@ -292,6 +298,8 @@ public struct LoomPeerAdvertisement: Codable, Hashable, Sendable {
             tcpPathKey
         case .quic:
             quicPathKey
+        case .udp:
+            udpPathKey
         }
     }
 

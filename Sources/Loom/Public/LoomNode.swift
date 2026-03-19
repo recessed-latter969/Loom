@@ -20,6 +20,7 @@ public final class LoomNode {
 
     private var advertiser: BonjourAdvertiser?
     private var directListeners: [LoomTransportKind: LoomDirectListener] = [:]
+    private var directListenerPorts: [LoomTransportKind: UInt16] = [:]
     private var overlayProbeServer: LoomOverlayProbeServer?
 
     public init(
@@ -74,6 +75,7 @@ public final class LoomNode {
         self.advertiser = nil
         let directListeners = self.directListeners.values
         self.directListeners.removeAll()
+        self.directListenerPorts.removeAll()
 
         await overlayProbeServer?.stop()
         await advertiser?.stop()
@@ -83,7 +85,14 @@ public final class LoomNode {
     }
 
     public func updateAdvertisement(_ advertisement: LoomPeerAdvertisement) async {
-        await advertiser?.updateAdvertisement(advertisement)
+        // Preserve Loom-managed direct transport ports when the caller provides
+        // an advertisement without them (e.g. Mirage updating metadata only).
+        var ports = directListenerPorts
+        if let bonjourPort = await advertiser?.port {
+            ports[.tcp] = bonjourPort
+        }
+        let merged = Self.advertisement(advertisement, withDirectTransportPorts: ports)
+        await advertiser?.updateAdvertisement(merged)
     }
 
     public func makeSession(connection: NWConnection) -> LoomSession {
@@ -204,6 +213,59 @@ public final class LoomNode {
                     withDirectTransportPorts: ports
                 )
             )
+
+            // Start a separate UDP listener for actual session transport.
+            // The Bonjour TCP listener above is only for discovery/permissions —
+            // NWListener with Bonjour service registration doesn't accept
+            // application-layer UDP datagrams.
+            if configuration.enabledDirectTransports.contains(.udp) {
+                let udpListener = LoomDirectListener(
+                    transportKind: .udp,
+                    enablePeerToPeer: configuration.enablePeerToPeer
+                )
+                let udpPort = try await udpListener.start(port: configuration.udpPort) { [weak self] connection in
+                    guard let self else { return }
+                    let session = LoomAuthenticatedSession(
+                        rawSession: LoomSession(connection: connection),
+                        role: .receiver,
+                        transportKind: .udp
+                    )
+                    Task {
+                        do {
+                            let hello = try await helloProvider()
+                            _ = try await session.start(
+                                localHello: hello,
+                                identityManager: identityManager,
+                                trustProvider: self.trustProvider
+                            )
+                            onSession(session)
+                        } catch {
+                            if error is LoomError || error is CancellationError {
+                                LoomLogger.session(
+                                    "Authenticated udp listener session handshake failed for \(serviceName): \(error.localizedDescription)"
+                                )
+                            } else {
+                                LoomLogger.error(
+                                    .session,
+                                    error: error,
+                                    message: "Failed to start authenticated udp listener session for \(serviceName): "
+                                )
+                            }
+                            await session.cancel()
+                        }
+                    }
+                }
+                directListeners[.udp] = udpListener
+                directListenerPorts[.udp] = udpPort
+                ports[.udp] = udpPort
+                await updateAdvertisement(
+                    Self.advertisement(
+                        baseHello.advertisement,
+                        withDirectTransportPorts: ports
+                    )
+                )
+            }
+
             guard configuration.enabledDirectTransports.contains(.quic) else {
                 try await startOverlayProbeServer(serviceName: serviceName)
                 return ports
@@ -214,7 +276,7 @@ public final class LoomNode {
                 enablePeerToPeer: configuration.enablePeerToPeer,
                 quicALPN: configuration.quicALPN
             )
-            let requestedQUICPort = configuration.quicPort == 0 ? port : configuration.quicPort
+            let requestedQUICPort = configuration.quicPort
             let quicPort = try await quicListener.start(port: requestedQUICPort) { [weak self] connection in
                 guard let self else { return }
                 let session = LoomAuthenticatedSession(
@@ -248,6 +310,7 @@ public final class LoomNode {
                 }
             }
             directListeners[.quic] = quicListener
+            directListenerPorts[.quic] = quicPort
             ports[.quic] = quicPort
             await updateAdvertisement(
                 Self.advertisement(

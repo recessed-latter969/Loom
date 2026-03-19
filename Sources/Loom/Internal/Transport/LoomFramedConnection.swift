@@ -8,12 +8,20 @@
 import Foundation
 import Network
 
-package actor LoomFramedConnection {
+package actor LoomFramedConnection: LoomSessionTransport {
     private let connection: NWConnection
     private var receiveBuffer = Data()
 
     package init(connection: NWConnection) {
         self.connection = connection
+    }
+
+    package func sendMessage(_ data: Data) async throws {
+        try await sendFrame(data)
+    }
+
+    package func receiveMessage(maxBytes: Int) async throws -> Data {
+        try await readFrame(maxBytes: maxBytes)
     }
 
     package func awaitReady() async throws {

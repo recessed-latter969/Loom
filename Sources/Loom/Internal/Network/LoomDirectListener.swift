@@ -89,6 +89,10 @@ package enum LoomTransportParametersFactory {
                 : NWProtocolQUIC.Options(alpn: quicALPN)
             parameters = NWParameters(quic: options)
             parameters.includePeerToPeer = enablePeerToPeer
+        case .udp:
+            parameters = NWParameters.udp
+            parameters.includePeerToPeer = enablePeerToPeer
+            parameters.serviceClass = .signaling
         }
         if let requiredInterfaceType {
             parameters.requiredInterfaceType = requiredInterfaceType
