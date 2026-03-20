@@ -152,6 +152,8 @@ public struct LoomPeerAdvertisement: Codable, Hashable, Sendable {
     public let modelIdentifier: String?
     public let iconName: String?
     public let machineFamily: String?
+    /// The mDNS hostname of the advertising peer (e.g., `"Ethans-Mac-Studio.local"`).
+    public let hostName: String?
     public let directTransports: [LoomDirectTransportAdvertisement]
     public let metadata: [String: String]
 
@@ -163,6 +165,7 @@ public struct LoomPeerAdvertisement: Codable, Hashable, Sendable {
         modelIdentifier: String? = nil,
         iconName: String? = nil,
         machineFamily: String? = nil,
+        hostName: String? = nil,
         directTransports: [LoomDirectTransportAdvertisement] = [],
         metadata: [String: String] = [:]
     ) {
@@ -173,6 +176,7 @@ public struct LoomPeerAdvertisement: Codable, Hashable, Sendable {
         self.modelIdentifier = modelIdentifier
         self.iconName = iconName
         self.machineFamily = machineFamily
+        self.hostName = hostName
         self.directTransports = directTransports
         self.metadata = metadata
     }
@@ -200,6 +204,9 @@ public struct LoomPeerAdvertisement: Codable, Hashable, Sendable {
         }
         if let machineFamily {
             record[Self.machineFamilyKey] = machineFamily
+        }
+        if let hostName {
+            record[Self.hostNameKey] = hostName
         }
         for transport in directTransports {
             record[Self.directTransportKey(for: transport.transportKind)] = String(transport.port)
@@ -247,6 +254,7 @@ public struct LoomPeerAdvertisement: Codable, Hashable, Sendable {
             modelIdentifier: sanitizedTXTValue(txtRecord[modelIdentifierKey]),
             iconName: sanitizedTXTValue(txtRecord[iconNameKey]),
             machineFamily: sanitizedTXTValue(txtRecord[machineFamilyKey]),
+            hostName: sanitizedTXTValue(txtRecord[hostNameKey]),
             directTransports: directTransports,
             metadata: metadata
         )
@@ -259,6 +267,7 @@ public struct LoomPeerAdvertisement: Codable, Hashable, Sendable {
     private static let modelIdentifierKey = "model"
     private static let iconNameKey = "icon"
     private static let machineFamilyKey = "family"
+    private static let hostNameKey = "hn"
     private static let tcpPortKey = "tcp"
     private static let tcpPathKey = "tcp-path"
     private static let quicPortKey = "quic"
@@ -273,6 +282,7 @@ public struct LoomPeerAdvertisement: Codable, Hashable, Sendable {
         modelIdentifierKey,
         iconNameKey,
         machineFamilyKey,
+        hostNameKey,
         tcpPortKey,
         tcpPathKey,
         quicPortKey,

@@ -194,6 +194,7 @@ public enum LoomHostCatalogCodec {
             modelIdentifier: advertisement.modelIdentifier,
             iconName: advertisement.iconName,
             machineFamily: advertisement.machineFamily,
+            hostName: advertisement.hostName,
             directTransports: advertisement.directTransports,
             metadata: metadata
         )
@@ -215,6 +216,7 @@ public enum LoomHostCatalogCodec {
             modelIdentifier: advertisement.modelIdentifier,
             iconName: advertisement.iconName,
             machineFamily: advertisement.machineFamily,
+            hostName: advertisement.hostName,
             directTransports: advertisement.directTransports,
             metadata: metadata
         )

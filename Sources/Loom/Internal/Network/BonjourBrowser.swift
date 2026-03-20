@@ -191,6 +191,7 @@ public final class LoomDiscovery {
             modelIdentifier: advertisement.modelIdentifier,
             iconName: advertisement.iconName,
             machineFamily: advertisement.machineFamily,
+            hostName: advertisement.hostName,
             directTransports: advertisement.directTransports,
             metadata: advertisement.metadata
         )
@@ -326,6 +327,7 @@ public final class LoomDiscovery {
                     modelIdentifier: peer.advertisement.modelIdentifier,
                     iconName: peer.advertisement.iconName,
                     machineFamily: peer.advertisement.machineFamily,
+                    hostName: peer.advertisement.hostName,
                     directTransports: peer.advertisement.directTransports,
                     metadata: peer.advertisement.metadata
                 )

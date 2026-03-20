@@ -373,6 +373,7 @@ public final class LoomNode {
             modelIdentifier: base.modelIdentifier,
             iconName: base.iconName,
             machineFamily: base.machineFamily,
+            hostName: base.hostName ?? ProcessInfo.processInfo.hostName,
             directTransports: directTransports,
             metadata: base.metadata
         )
